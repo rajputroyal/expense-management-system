@@ -1,3 +1,5 @@
+import { isDevelopment } from '../config/environment.js';
+
 export default (err, req, res, next) => {
   let status = err.status;
   if (!status) {
@@ -5,13 +7,22 @@ export default (err, req, res, next) => {
     else if (err.name === 'SequelizeUniqueConstraintError') status = 409;
     else status = 500;
   }
-  if (status >= 500) console.error(err);
+
+  if (status >= 500) {
+    if (isDevelopment) console.error(err);
+    else console.error(`[ERROR] ${err.message}`);
+  }
+
   const message = status === 500
     ? 'Internal server error'
     : (err.name === 'SequelizeUniqueConstraintError' ? 'A record with these values already exists' : err.message);
-  res.status(status).json({
-    success: false,
-    message,
-    ...(process.env.NODE_ENV === 'development' && status === 500 ? { detail: err.message } : {})
-  });
+
+  const response = { success: false, message };
+
+  if (isDevelopment && status >= 500) {
+    response.detail = err.message;
+    response.stack = err.stack;
+  }
+
+  res.status(status).json(response);
 };

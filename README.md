@@ -8,7 +8,7 @@ A full-stack expense management application with JWT authentication, role-based 
 - **Backend:** Node.js, Express.js, Sequelize (JavaScript ES6 modules only)
 - **Database:** MySQL 8+ (schema defined in `backend/database/schema.sql`)
 - **Security:** bcrypt, JWT, Helmet, CORS allowlist, rate limiting, Joi validation, centralized error handling
-- **Hosting:** Vercel (frontend), Railway (backend + MySQL)
+- **Hosting:** Render (backend + frontend)
 
 ## Features
 
@@ -57,7 +57,7 @@ docs/
 
 - Node.js 18+ and npm
 - MySQL 8+
-- A Railway account (backend/database) and a Vercel account (frontend)
+- A Render account (backend + frontend)
 
 ## Local Setup
 
@@ -91,7 +91,7 @@ cp .env.example .env
 npm run dev
 ```
 
-`.env` must include `DB_NAME`, `DB_USER`, `JWT_SECRET`, and the remaining values from `backend/.env.example`. The API runs at `http://localhost:5000/api/v1`; health check: `GET /health`.
+`.env` must include `NODE_ENV=development`, `CLIENT_URL=http://localhost:5173`, `DB_NAME`, `DB_USER`, `JWT_SECRET`, and the remaining values from `backend/.env.example`. The API runs at `http://localhost:5000/api/v1`; health check: `GET /health`.
 
 ### 3. Frontend
 
@@ -117,14 +117,14 @@ npm run dev
 ## Documentation
 
 - [REST API reference](docs/API.md)
-- [Vercel + Railway deployment guide](docs/DEPLOYMENT.md)
+- [Deployment guide](docs/DEPLOYMENT.md)
 - Root [`.env.example`](.env.example) lists every production variable
 
 ## Deployment
 
-- Backend: Railway service rooted at `backend/`, using `backend/railway.json`
-- Frontend: Vercel project rooted at `frontend/`, using `frontend/vercel.json`
-- Set `CLIENT_URL` on Railway to the Vercel origin and `VITE_API_URL` on Vercel to the Railway API URL
+- Backend: Render Web Service rooted at `backend/`, start command `npm start`
+- Frontend: Render Static Site rooted at `frontend/`, build command `npm run build`, publish directory `dist`
+- On the backend service set `NODE_ENV=production`, `CLIENT_URL` (frontend origin), all `DB_*` values, `DB_CA_CERT`, and `JWT_SECRET`; on the frontend site set `VITE_API_URL` (backend API URL)
 
 Deployed application: **<ADD_DEPLOYED_LINK_HERE>** (update after deployment).
 
@@ -135,5 +135,5 @@ Deployed application: **<ADD_DEPLOYED_LINK_HERE>** (update after deployment).
 - [x] `.env.example` files (root, backend, frontend)
 - [x] Database schema and manual setup SQL
 - [x] API documentation
-- [x] Production configuration for Vercel and Railway
+- [x] Production configuration for Render
 - [ ] Deployed application link

@@ -5,9 +5,10 @@ import rateLimit from 'express-rate-limit';
 import routes from './routes/index.js';
 import errorHandler from './middleware/errorHandler.js';
 import { sequelize } from './models/index.js';
+import { isDevelopment } from './config/environment.js';
 
 const app = express();
-const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
+const allowedOrigins = (process.env.CLIENT_URL || '')
   .split(',')
   .map(origin => origin.trim().replace(/\/$/, ''))
   .filter(Boolean);
@@ -26,7 +27,9 @@ app.get('/health', async (req, res) => {
     await sequelize.authenticate();
     res.json({ success: true, message: 'Expense API is running', database: 'connected' });
   } catch (error) {
-    res.status(503).json({ success: false, message: 'Database connection failed', database: 'disconnected', error: error.message });
+    const response = { success: false, message: 'Database connection failed', database: 'disconnected' };
+    if (isDevelopment) response.error = error.message;
+    res.status(503).json(response);
   }
 });
 app.use('/api/v1', routes);

@@ -1,6 +1,7 @@
 
 import 'dotenv/config';
 import app from './src/app.js';
+import { isDevelopment } from './src/config/environment.js';
 import { sequelize } from './src/models/index.js';
 
 const PORT = process.env.PORT || 5000;
@@ -14,6 +15,11 @@ if (
   console.error(
     'JWT_SECRET must be set to a strong random value (at least 16 characters).'
   );
+  process.exit(1);
+}
+
+if (!(process.env.CLIENT_URL || '').trim()) {
+  console.error('CLIENT_URL is required.');
   process.exit(1);
 }
 
@@ -31,14 +37,14 @@ async function connectWithRetry(
     } catch (error) {
       if (attempt === retries) {
         console.error(
-          `[DB ERROR] Database connection failed after ${retries} attempts: ${error.message}`
+          `[DB ERROR] Database connection failed after ${retries} attempts${isDevelopment ? `: ${error.message}` : ''}`
         );
 
         throw error;
       }
 
       console.log(
-        `[DB RETRY] Attempt ${attempt}/${retries}. Retrying in ${delayMs}ms...`
+        `[DB RETRY] Attempt ${attempt}/${retries}. Retrying in ${delayMs}ms${isDevelopment ? `: ${error.message}` : ''}...`
       );
 
       await new Promise(resolve => setTimeout(resolve, delayMs));
@@ -62,7 +68,9 @@ async function startServer() {
     });
 
   } catch (error) {
-    console.error('[SERVER ERROR] Unable to start server:', error.message);
+    console.error(
+      `[SERVER ERROR] Unable to start server${isDevelopment ? `: ${error.message}` : ''}`
+    );
 
     process.exit(1);
   }
