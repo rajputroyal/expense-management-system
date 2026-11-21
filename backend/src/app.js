@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import routes from './routes/index.js';
 import errorHandler from './middleware/errorHandler.js';
+import { sequelize } from './models/index.js';
 
 const app = express();
 const allowedOrigins = (process.env.CLIENT_URL || 'http://localhost:5173')
@@ -20,7 +21,14 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '1mb' }));
 app.use('/api/v1/auth', rateLimit({ windowMs: 15 * 60 * 1000, limit: 30 }));
-app.get('/health', (req, res) => res.json({ success: true, message: 'Expense API is running' }));
+app.get('/health', async (req, res) => {
+  try {
+    await sequelize.authenticate();
+    res.json({ success: true, message: 'Expense API is running', database: 'connected' });
+  } catch (error) {
+    res.status(503).json({ success: false, message: 'Database connection failed', database: 'disconnected', error: error.message });
+  }
+});
 app.use('/api/v1', routes);
 app.use((req, res) => res.status(404).json({ success: false, message: 'Route not found' }));
 app.use(errorHandler);
