@@ -32,7 +32,11 @@ if (!process.env.DB_NAME || !process.env.DB_USER) {
   throw new Error('DB_NAME and DB_USER are required.');
 }
 
-const caPath = path.resolve(process.cwd(), 'certs', 'ca.pem');
+const caCertificate = process.env.DB_CA_CERT
+  ? process.env.DB_CA_CERT.replace(/\\n/g, '\n')
+  : fs.readFileSync(
+      path.resolve(process.cwd(), 'certs', 'ca.pem')
+    );
 
 const sequelize = new Sequelize(
   process.env.DB_NAME,
@@ -49,7 +53,7 @@ const sequelize = new Sequelize(
     },
     dialectOptions: {
       ssl: {
-        ca: fs.readFileSync(caPath),
+        ca: caCertificate,
         minVersion: 'TLSv1.2'
       }
     },
